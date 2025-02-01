@@ -3,9 +3,10 @@ import "./header.css";
 import { BiMenuAltRight } from "react-icons/bi";
 import OutsideClickHandler from "react-outside-click-handler";
 import { Link, NavLink } from "react-router-dom";
+import useHeaderColor from "../../hooks/useHeaderColor";
 const Header = () => {
   const [menuOpened, setMenuOpened] = useState(false);
-
+  const headerColor = useHeaderColor();
   const getMenuStyles = (menuOpened) => {
     if (document.documentElement.clientWidth <= 800) {
       return { right: !menuOpened && "-100%" };
@@ -13,7 +14,7 @@ const Header = () => {
   };
 
   return (
-    <section className="h-wrapper">
+    <section className="h-wrapper" style={{ background: headerColor }}>
       <div className="flexCenter innerWidth paddings h-container">
         <Link to="/">
           <img src="./logo.png" alt="logo" width={100} />
