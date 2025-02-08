@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQuery } from "react-query";
 import { useLocation } from "react-router-dom";
 import { getProperty } from "../../utils/api";
@@ -9,13 +9,20 @@ import { AiTwotoneCar } from "react-icons/ai";
 import { MdMeetingRoom, MdLocationPin } from "react-icons/md";
 import "./property.css";
 import Map from "../../components/Map/Map";
+import useAuthCheck from "../../hooks/useAuthCheck";
+import { useAuth0 } from "@auth0/auth0-react";
+import BookingModel from "../../components/BookingModel/BookingModel";
 const Property = () => {
   const { pathname } = useLocation();
   const id = pathname.split("/").slice(-1)[0];
   const { data, isLoading, isError } = useQuery(["resd", id], () =>
     getProperty(id)
   );
-  console.log(data);
+
+  const [modelOpened, setModelOpened] = useState(false);
+  const { validateLogin } = useAuthCheck();
+  const { user } = useAuth0();
+
   if (isLoading) {
     return (
       <div className="wrapper">
@@ -91,7 +98,21 @@ const Property = () => {
 
             {/*booking buttons*/}
 
-            <button className="button">Book your Visit</button>
+            <button
+              className="button"
+              onClick={() => {
+                validateLogin() && setModelOpened(true);
+              }}
+            >
+              Book your Visit
+            </button>
+
+            <BookingModel
+              opened={modelOpened}
+              setOpened={setModelOpened}
+              propertyId={id}
+              email={user?.email}
+            />
           </div>
 
           {/*right */}
