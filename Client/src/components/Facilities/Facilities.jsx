@@ -1,6 +1,12 @@
 import { Box, Button, Group, NumberInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import React from "react";
+import React, { useContext } from "react";
+import UserDetailContext from "../../Context/UserDetailsContext.js";
+import { useAuth0 } from "@auth0/auth0-react";
+import useProperties from "../../hooks/useProperties.jsx";
+import { useMutation } from "react-query";
+import { toast } from "react-toastify";
+import { createResidency } from "../../utils/api.js";
 
 const Facilities = ({
   prevStep,
@@ -34,6 +40,49 @@ const Facilities = ({
       mutate();
     }
   };
+
+  //Upload Logic
+
+  const { user } = useAuth0();
+  const {
+    userDetails: { token },
+  } = useContext(UserDetailContext);
+  const { refetch: refetchProperties } = useProperties();
+
+  const { mutate, isLoading } = useMutation({
+    mutationFn: () =>
+      createResidency(
+        {
+          ...propertyDetails,
+          facilities: { bedrooms, parkings, bathrooms },
+        },
+        token
+      ),
+    onError: ({ response }) =>
+      toast.error(response.data.message, { position: "bottom-right" }),
+    onSettled: () => {
+      toast.success("Added Successfully", { position: "bottom-right" });
+      setPropertyDetails({
+        title: "",
+        description: "",
+        price: 0,
+        country: "",
+        city: "",
+        address: "",
+        image: null,
+        facilities: {
+          bedrooms: 0,
+          parkings: 0,
+          bathrooms: 0,
+        },
+        userEmail: user?.email,
+      });
+      setOpened(false);
+      setActiveStep(0);
+      refetchProperties();
+    },
+  });
+
   return (
     <Box maw="30%" mx="auto" my="sm">
       <form
@@ -65,9 +114,8 @@ const Facilities = ({
           <Button variant="default" onClick={prevStep}>
             Back
           </Button>
-          <Button type="submit" color="green">
-            Add Property
-            {/*  {isLoading? "Submitting": "Add Property"} */}
+          <Button type="submit" color="green" disabled={isLoading}>
+            {isLoading ? "Submitting" : "Add Property"}
           </Button>
         </Group>
       </form>
